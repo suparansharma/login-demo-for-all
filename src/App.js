@@ -55,6 +55,25 @@ function App() {
     });
   };
 
+
+  const handleBlur =(event) =>{
+  console.log(event.target.name,event.target.value);
+  if(event.target.name==='email'){
+    const isEmailValid = /\S+@\S+\.\S+/.test(event.target.value);
+    console.log(isEmailValid);
+  }
+
+  if(event.target.name==='password'){
+    const isPasswordValid = event.target.value.length>0;
+    const isEmailValid = /\d{1}/.test(event.target.value);
+    console.log(isPasswordValid,isEmailValid);
+  }
+  }
+
+  const handleSubmit = () =>{
+
+  }
+
   return (
     <div className="App">
       {user.isSignedIn ? 
@@ -69,6 +88,16 @@ function App() {
           <img src={user.photo} />
         </div>
       )}
+
+
+    <h1>Our Own Authentication</h1>
+    <form onSubmit={handleSubmit}>
+      <input type="text" onBlur={handleBlur} name="email" id="" placeholder='Your Email addresss' required /><br />
+      <input type="password" onChange={handleBlur} name="password" id="" placeholder='Your Password' required /><br />
+      <input type="submit" value="submit" />
+    </form>
+
+
     </div>
   );
 }
