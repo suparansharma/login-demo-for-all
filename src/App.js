@@ -9,11 +9,14 @@ import {
   signOut,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile
 } from "firebase/auth";
 import { useState } from "react";
 function App() {
+  const[newUser,setNewUser] = useState(false);
   const [user, setUser] = useState({
     isSignedIn: false,
+    // newUser:false,
     name: "",
     email: "",
     password: "",
@@ -56,6 +59,9 @@ function App() {
         name: "",
         email: "",
         photo: "",
+        error:"",
+        success:false
+
       };
       setUser(signedOutUser);
     });
@@ -85,24 +91,60 @@ function App() {
   };
 
   const handleSubmit = (event) => {
-    if (user.email && user.password) {
+    if (newUser && user.email && user.password) {
     
       const auth = getAuth();
       console.log(user.email, user.password, "subbmit");
       createUserWithEmailAndPassword(auth, user.email, user.password)
-        .then((userCredential) => {
-          // Signed in
-          const user = userCredential.user;
-          // ...
+        .then(res => {
+          const newUserInfo = {...user};
+          newUserInfo.error="";
+          newUserInfo.success=true;
+          setUser(newUserInfo);
+          updateUserName(user.name);
+        console.log(res)
         })
         .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          console.log(errorCode, errorMessage);
+          const newUserInfo = {...user};
+          newUserInfo.error=error.message;
+          newUserInfo.success = false;
+          setUser(newUserInfo);
         });
     }
+
+
+    if (!newUser && user.email && user.password){
+      const auth = getAuth();
+signInWithEmailAndPassword(auth, user.email, user.password)
+  .then((userCredential) => {
+    const newUserInfo = {...user};
+    newUserInfo.error="";
+    newUserInfo.success=true;
+    setUser(newUserInfo);
+  })
+  .catch((error) => {
+    const newUserInfo = {...user};
+    newUserInfo.error=error.message;
+    newUserInfo.success = false;
+    setUser(newUserInfo);
+  });
+    }
+
+
     event.preventDefault();
   };
+
+
+  const updateUserName = name =>{
+    const auth = getAuth();
+    updateProfile(auth.currentUser, {
+      displayName: name
+    }).then(function()  {
+      console.log("user name updated successfully")
+    }).catch(function(error) {
+      console.log(error);
+    });
+  }
 
   return (
     <div className="App">
@@ -119,11 +161,13 @@ function App() {
         </div>
       )}
 
-      <h1>Our Own Authentication</h1>
+      {/* <h1>Our Own Authentication</h1>
       <p>Email:{user.email}</p>
-      <p>Password:{user.password}</p>
+      <p>Password:{user.password}</p> */}
+      <input type="checkbox" onChange={() =>(!setNewUser(!newUser))} name="newUser" id="" />
+      <label htmlFor="newUser">New User Sign up</label>
       <form onSubmit={handleSubmit}>
-        <input type="text" onBlur={handleBlur} placeholder="Your Name" /> <br />
+       {newUser && <input type="text" onBlur={handleBlur} placeholder="Your Name" /> }<br />
         <input
           type="text"
           onBlur={handleBlur}
@@ -142,8 +186,10 @@ function App() {
           required
         />
         <br />
-        <input type="submit" value="submit" />
+        <input type="submit" value={newUser ? 'Sign up': 'Sign In'} />
       </form>
+      <p style={{ color:"red" }}>{user.error}</p>
+     { user.success && <p style={{ color:"green" }}>User {newUser ? 'created' : 'Logged In'} Created successfully</p>}
     </div>
   );
 }
