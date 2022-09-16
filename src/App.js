@@ -9,7 +9,7 @@ import {
   signOut,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  updateProfile
+  updateProfile,FacebookAuthProvider
 } from "firebase/auth";
 import { useState } from "react";
 function App() {
@@ -24,9 +24,10 @@ function App() {
   });
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
+  const Googleprovider = new GoogleAuthProvider();
+  const Fbprovider = new FacebookAuthProvider();
   const googleSignIn = () => {
-    signInWithPopup(auth, provider)
+    signInWithPopup(auth, Googleprovider)
       .then((result) => {
         const { displayName, email, photoURL } = result.user;
         const signedInUser = {
@@ -146,6 +147,33 @@ signInWithEmailAndPassword(auth, user.email, user.password)
     });
   }
 
+  const fbSignIn = () =>{
+    const auth = getAuth();
+signInWithPopup(auth, Fbprovider)
+  .then((result) => {
+    // The signed-in user info.
+    const user = result.user;
+
+    // This gives you a Facebook Access Token. You can use it to access the Facebook API.
+    const credential = FacebookAuthProvider.credentialFromResult(result);
+    const accessToken = credential.accessToken;
+    console.log(user);
+
+    // ...
+  })
+  .catch((error) => {
+    // Handle Errors here.
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // The email of the user's account used.
+    const email = error.customData.email;
+    // The AuthCredential type that was used.
+    const credential = FacebookAuthProvider.credentialFromError(error);
+
+    // ...
+  });
+  }
+
   return (
     <div className="App">
       {user.isSignedIn ? (
@@ -153,6 +181,9 @@ signInWithEmailAndPassword(auth, user.email, user.password)
       ) : (
         <button onClick={googleSignIn}>Sign In</button>
       )}
+      <br />
+
+      <button onClick={fbSignIn}>Sign In Using Facebook</button>
       {user.isSignedIn && (
         <div>
           <p>Welcome, {user.name}</p>
